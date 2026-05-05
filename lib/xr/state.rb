@@ -48,7 +48,7 @@ module Xr
         next if stripped.empty? || stripped.start_with?("#")
 
         match = stripped.match(/\A([A-Za-z0-9_-]+)\s*=\s*(.+)\z/)
-        raise Error, "Estado inválido em #{@path}: linha #{number}" unless match
+        raise Error, "Invalid state in #{@path}: line #{number}" unless match
 
         key = match[1]
         next unless KEYS.include?(key)
@@ -60,6 +60,10 @@ module Xr
     end
 
     def parse_value(raw)
+      quoted_start = raw.start_with?("\"")
+      quoted_end = raw.end_with?("\"")
+      raise Error, "Invalid quoted value in #{@path}" if quoted_start != quoted_end
+
       return unquote(raw) if raw.start_with?("\"") && raw.end_with?("\"")
 
       raw

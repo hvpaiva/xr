@@ -8,8 +8,8 @@ module Xr
 
     def initialize(slug:, track: Config.track, root: Config.root(track), path: nil)
       slug = slug.to_s.strip
-      raise Error, "Exercise obrigatório." if slug.empty?
-      raise Error, "Slug inválido: #{slug.inspect}. Use algo como assembly-line." unless slug.match?(SLUG_PATTERN)
+      raise Error, "Exercise is required." if slug.empty?
+      raise Error, "Invalid slug: #{slug.inspect}. Use something like assembly-line." unless slug.match?(SLUG_PATTERN)
 
       @slug = slug
       @track = track
@@ -24,17 +24,17 @@ module Xr
     def ensure_exists!
       return self if exists?
 
-      raise Error, "Exercise não encontrado: #{@path}"
+      raise Error, "Exercise not found: #{@path}"
     end
 
     def test_file
       ensure_exists!
-      pick_one(files_matching { |name| name.end_with?("_test.rb") }, kind: "arquivo de teste (*_test.rb)")
+      pick_one(files_matching { |name| name.end_with?("_test.rb") }, kind: "test file (*_test.rb)")
     end
 
     def solution_file
       ensure_exists!
-      pick_one(files_matching { |name| name.end_with?(".rb") && !name.end_with?("_test.rb") }, kind: "arquivo de solução (.rb)")
+      pick_one(files_matching { |name| name.end_with?(".rb") && !name.end_with?("_test.rb") }, kind: "solution file (.rb)")
     end
 
     private
@@ -48,11 +48,11 @@ module Xr
     def pick_one(files, kind:)
       case files.length
       when 0
-        raise Error, "Não encontrei #{kind} em #{@path}"
+        raise Error, "Could not find #{kind} in #{@path}"
       when 1
         files.first
       else
-        raise Error, "Encontrei mais de um #{kind} em #{@path}: #{files.join(', ')}"
+        raise Error, "Found more than one #{kind} in #{@path}: #{files.join(', ')}"
       end
     end
   end

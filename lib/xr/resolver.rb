@@ -36,7 +36,7 @@ module Xr
     def from_state
       data = @state.load
       slug = data["exercise"]
-      raise Error, "Nenhum exercise atual. Use `xr new <exercise>` ou `xr use <exercise>`." unless present?(slug)
+      raise Error, "No current exercise. Use `xr new <exercise>` or `xr use <exercise>`." unless present?(slug)
 
       Exercise.new(
         slug: slug,

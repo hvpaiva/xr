@@ -19,7 +19,7 @@ module Xr
              system(*args)
            end
 
-      raise Error, "Comando falhou: #{Shellwords.join(args)}" unless ok
+      raise Error, "Command failed: #{Shellwords.join(args)}" unless ok
 
       true
     end

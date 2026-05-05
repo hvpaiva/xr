@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 3.2.0"
 
-  spec.files = Dir["lib/**/*.rb", "bin/*", "README.md"]
+  spec.files = Dir["lib/**/*.rb", "bin/*", "README.md", "install.sh"]
   spec.bindir = "bin"
   spec.executables = ["xr"]
 end

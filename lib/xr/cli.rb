@@ -37,7 +37,7 @@ module Xr
       when "help", "-h", "--help" then help_command
       when "version", "-v", "--version" then version_command
       else
-        raise Error, "Comando desconhecido: #{command}. Use `xr help`."
+        raise Error, "Unknown command: #{command}. Use `xr help`."
       end
 
       0
@@ -45,7 +45,7 @@ module Xr
       @ui.error(e.message)
       1
     rescue Interrupt
-      @ui.error("Interrompido.")
+      @ui.error("Interrupted.")
       130
     end
 
@@ -54,7 +54,7 @@ module Xr
     def new_command
       exercise = exercise_from_required_arg("new <exercise>", require_existing: false)
 
-      @ui.info("Baixando #{exercise.slug}...")
+      @ui.info("Downloading #{exercise.slug}...")
       @runner.run("exercism", "download", "--track=#{exercise.track}", "--exercise=#{exercise.slug}")
       exercise.ensure_exists!
       save_current(exercise)
@@ -69,7 +69,7 @@ module Xr
       exercise = @resolver.resolve(optional_arg)
       test_file = exercise.test_file
 
-      @ui.info("Testando #{exercise.slug}...")
+      @ui.info("Testing #{exercise.slug}...")
       @runner.run("ruby", "-r", "minitest/pride", test_file, chdir: exercise.path)
     end
 
@@ -77,7 +77,7 @@ module Xr
       exercise = @resolver.resolve(optional_arg)
       solution_file = exercise.solution_file
 
-      @ui.info("Abrindo IRB para #{exercise.slug}...")
+      @ui.info("Opening IRB for #{exercise.slug}...")
       @runner.run("irb", "-r", "./#{solution_file}", "--simple-prompt", chdir: exercise.path)
     end
 
@@ -85,27 +85,27 @@ module Xr
       exercise = @resolver.resolve(optional_arg)
       solution_file = exercise.solution_file
 
-      @ui.info("Submetendo #{exercise.slug}...")
+      @ui.info("Submitting #{exercise.slug}...")
       @runner.run("exercism", "submit", solution_file, chdir: exercise.path)
     end
 
     def use_command
       exercise = exercise_from_required_arg("use <exercise>")
       save_current(exercise)
-      @ui.success("Exercise atual: #{exercise.slug}")
+      @ui.success("Current exercise: #{exercise.slug}")
       @ui.command(exercise.path)
     end
 
     def current_command
       data = @state.load
-      raise Error, "Nenhum exercise atual salvo." if data.empty? || blank?(data["exercise"])
+      raise Error, "No current exercise saved." if data.empty? || blank?(data["exercise"])
 
       path = data["path"]
       @ui.say(@ui.bold(data.fetch("exercise")))
       @ui.say("track: #{data.fetch('track', @track)}")
       @ui.say("path:  #{path}")
       @ui.say("state: #{@state.path}")
-      @ui.warn("O diretório salvo não existe mais.") if path && !Dir.exist?(path)
+      @ui.warn("The saved directory no longer exists.") if path && !Dir.exist?(path)
     end
 
     def path_command
@@ -114,7 +114,7 @@ module Xr
     end
 
     def list_command
-      raise Error, "Diretório de exercícios não encontrado: #{@root}" unless Dir.exist?(@root)
+      raise Error, "Exercise directory not found: #{@root}" unless Dir.exist?(@root)
 
       current = @state.load["exercise"]
       exercises = Dir.children(@root)
@@ -122,7 +122,7 @@ module Xr
                      .sort
 
       if exercises.empty?
-        @ui.warn("Nenhum exercise baixado em #{@root}.")
+        @ui.warn("No exercises downloaded in #{@root}.")
         return
       end
 
@@ -134,33 +134,33 @@ module Xr
 
     def clear_command
       @state.clear
-      @ui.success("Estado limpo: #{@state.path}")
+      @ui.success("State cleared: #{@state.path}")
     end
 
     def help_command
       @ui.say(<<~HELP)
-        #{@ui.bold('xr')} — helper para Exercism Ruby
+        #{@ui.bold('xr')} - Exercism Ruby helper
 
-        Uso:
-          xr new <exercise>       baixa, salva como atual e abre o editor
-          xr edit [exercise]      abre o editor no exercise
-          xr test [exercise]      roda ruby -r minitest/pride *_test.rb
-          xr irb [exercise]       abre irb -r ./<solution>.rb --simple-prompt
-          xr submit [exercise]    submete o arquivo .rb da solução
-          xr use <exercise>       salva um exercise já baixado como atual
-          xr current              mostra o exercise atual
-          xr path [exercise]      imprime o path do exercise
-          xr list                 lista exercises baixados
-          xr clear                limpa o estado salvo
+        Usage:
+          xr new <exercise>       download, save as current, and open the editor
+          xr edit [exercise]      open the editor for an exercise
+          xr test [exercise]      run ruby -r minitest/pride *_test.rb
+          xr irb [exercise]       open irb -r ./<solution>.rb --simple-prompt
+          xr submit [exercise]    submit the solution .rb file
+          xr use <exercise>       save a downloaded exercise as current
+          xr current              show the current exercise
+          xr path [exercise]      print the exercise path
+          xr list                 list downloaded exercises
+          xr clear                clear saved state
 
-        Estado:
+        State:
           #{@state.path}
 
-        Ambiente:
-          XR_ROOT     diretório dos exercises (atual: #{@root})
-          XR_TRACK    track do Exercism (atual: #{@track})
-          XR_EDITOR   editor usado por xr edit/new (padrão: nvim)
-          XR_STATE    arquivo TOML de estado
+        Environment:
+          XR_ROOT     exercise directory (current: #{@root})
+          XR_TRACK    Exercism track (current: #{@track})
+          XR_EDITOR   editor used by xr edit/new (default: nvim)
+          XR_STATE    TOML state file
       HELP
     end
 
@@ -171,9 +171,9 @@ module Xr
     def edit_exercise(exercise)
       target = editable_target(exercise)
       editor_args = Shellwords.split(Config.editor)
-      raise Error, "Editor inválido em XR_EDITOR/VISUAL/EDITOR." if editor_args.empty?
+      raise Error, "Invalid editor in XR_EDITOR/VISUAL/EDITOR." if editor_args.empty?
 
-      @ui.info("Abrindo #{exercise.slug}...")
+      @ui.info("Opening #{exercise.slug}...")
       @runner.run(*editor_args, target, chdir: exercise.path)
     end
 
@@ -189,8 +189,8 @@ module Xr
 
     def exercise_from_required_arg(usage, require_existing: true)
       slug = @argv.shift
-      raise Error, "Uso: xr #{usage}" if blank?(slug)
-      raise Error, "Argumentos demais: #{@argv.join(' ')}" unless @argv.empty?
+      raise Error, "Usage: xr #{usage}" if blank?(slug)
+      raise Error, "Too many arguments: #{@argv.join(' ')}" unless @argv.empty?
 
       Exercise.new(slug: slug, track: @track, root: @root).tap do |exercise|
         exercise.ensure_exists! if require_existing
@@ -199,7 +199,7 @@ module Xr
 
     def optional_arg
       slug = @argv.shift
-      raise Error, "Argumentos demais: #{@argv.join(' ')}" unless @argv.empty?
+      raise Error, "Too many arguments: #{@argv.join(' ')}" unless @argv.empty?
 
       slug
     end

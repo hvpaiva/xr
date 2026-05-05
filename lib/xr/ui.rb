@@ -23,19 +23,19 @@ module Xr
     end
 
     def info(message)
-      @out.puts("#{paint('→', :blue)} #{message}")
+      @out.puts("#{paint('->', :blue)} #{message}")
     end
 
     def success(message)
-      @out.puts("#{paint('✓', :green)} #{message}")
+      @out.puts("#{paint('OK', :green)} #{message}")
     end
 
     def warn(message)
-      @err.puts("#{paint('!', :yellow)} #{message}")
+      @err.puts("#{paint('WARN', :yellow)} #{message}")
     end
 
     def error(message)
-      @err.puts("#{paint('✗', :red)} #{message}")
+      @err.puts("#{paint('ERROR', :red)} #{message}")
     end
 
     def command(message)
