@@ -6,7 +6,7 @@ It remembers the current exercise, runs commands from the right exercise directo
 
 ## Install
 
-After the repository is public, install with one command:
+Install with one command:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.sh | sh
@@ -38,12 +38,6 @@ If `~/.local/bin/xr` already exists and points somewhere else, the installer ref
 
 ```bash
 XR_INSTALL_OVERWRITE=1 curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.sh | sh
-```
-
-While this repository is private, run the installer from a checkout and use the SSH clone URL:
-
-```bash
-XR_REPO_URL=git@github.com:hvpaiva/xr.git ./install.sh
 ```
 
 ## Requirements
