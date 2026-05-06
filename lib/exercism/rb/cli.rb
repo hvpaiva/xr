@@ -5,12 +5,15 @@ require "shellwords"
 module Exercism
   module Rb
     class CLI
-      COMMANDS = %w[new edit test irb submit use current path list clear help version].freeze
+      COMMANDS = %w[new edit test irb pry submit use current path list clear help version].freeze
+      CONSOLE_BOOTSTRAP = "exercism/rb/console_bootstrap"
+      CONSOLE_SOLUTION_ENV = "XRB_CONSOLE_SOLUTION_FILE"
       COMMAND_METHODS = {
         "new" => :new_command,
         "edit" => :edit_command,
         "test" => :test_command,
         "irb" => :irb_command,
+        "pry" => :pry_command,
         "submit" => :submit_command,
         "use" => :use_command,
         "current" => :current_command,
@@ -85,11 +88,15 @@ module Exercism
       end
 
       def irb_command
-        exercise = @resolver.resolve(optional_arg)
-        solution_file = exercise.solution_file
+        open_console("IRB", "irb", "--simple-prompt")
+      end
 
-        @ui.info("Opening IRB for #{@ui.highlight(exercise.slug)}...")
-        @runner.run("irb", "-r", "./#{solution_file}", "--simple-prompt", chdir: exercise.path)
+      def pry_command
+        open_console("Pry", "pry", "--simple-prompt")
+      rescue Error => error
+        raise unless error.message.start_with?("Command not found: pry")
+
+        raise Error, "Pry not found. Install it with `gem install pry` or ensure the `pry` executable is on PATH."
       end
 
       def submit_command
@@ -165,7 +172,8 @@ module Exercism
             xrb new <exercise>       download, save as current, and open the editor
             xrb edit [exercise]      open the editor for an exercise
             xrb test [exercise]      run exercise tests with minitest/pride
-            xrb irb [exercise]       open irb -r ./<solution>.rb --simple-prompt
+            xrb irb [exercise]       open IRB with reload! available
+            xrb pry [exercise]       open Pry with reload! available
             xrb submit [exercise]    submit the exercise solution
             xrb use <exercise>       save a downloaded exercise as current
             xrb current              show the current exercise
@@ -201,6 +209,35 @@ module Exercism
 
         @ui.info("Opening #{@ui.highlight(exercise.slug)}...")
         @runner.run(*editor_args, target, chdir: exercise.path)
+      end
+
+      def open_console(label, command, *args)
+        exercise = @resolver.resolve(optional_arg)
+        solution_file = exercise.solution_file
+
+        @ui.info("Opening #{label} for #{@ui.highlight(exercise.slug)}...")
+        @runner.run(
+          command,
+          "-r",
+          CONSOLE_BOOTSTRAP,
+          *args,
+          chdir: exercise.path,
+          env: console_env(solution_file)
+        )
+      end
+
+      def console_env(solution_file)
+        {
+          "RUBYLIB" => console_rubylib,
+          CONSOLE_SOLUTION_ENV => solution_file
+        }
+      end
+
+      def console_rubylib
+        paths = [File.expand_path("../..", __dir__)]
+        rubylib = ENV.fetch("RUBYLIB", nil)
+        paths << rubylib unless blank?(rubylib)
+        paths.join(File::PATH_SEPARATOR)
       end
 
       def ensure_download_created_exercise!(exercise)

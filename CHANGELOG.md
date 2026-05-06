@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## Unreleased
 
+## 0.3.0 - 2026-05-06
+
+### Added
+
+- `xrb pry` for opening Pry in the current exercise with the solution loaded and `reload!` available.
+- `reload!` helper for both `xrb irb` and `xrb pry` to re-load the exercise solution during an interactive session.
+
+### Changed
+
+- `xrb irb` now loads an xrb console bootstrap instead of requiring the solution file directly, preserving initial load behavior while making iterative reloads explicit and documented.
+
 ## 0.2.0 - 2026-05-06
 
 ### Added

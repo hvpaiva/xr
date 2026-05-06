@@ -7,7 +7,7 @@
 
 `xrb` is a small CLI that removes friction from the Exercism Ruby workflow.
 
-It remembers the current exercise, runs commands from the right exercise directory, opens your editor, starts IRB with the solution file loaded, runs tests, and submits the solution file without requiring manual `cd` work.
+It remembers the current exercise, runs commands from the right exercise directory, opens your editor, starts IRB or Pry with the solution file loaded, runs tests, and submits the solution file without requiring manual `cd` work.
 
 This is an independent helper for the Exercism Ruby track, not an official Exercism project.
 
@@ -49,6 +49,7 @@ exercism configure --token=<your-api-token>
 xrb new assembly-line
 xrb test
 xrb irb
+xrb pry
 xrb edit
 xrb submit
 ```
@@ -59,7 +60,8 @@ xrb submit
 xrb new <exercise>       # download, save as current, and open the editor
 xrb edit [exercise]      # open the editor for an exercise
 xrb test [exercise]      # run configured or selected test files
-xrb irb [exercise]       # open irb -r ./<solution>.rb --simple-prompt
+xrb irb [exercise]       # open IRB with reload! available
+xrb pry [exercise]       # open Pry with reload! available
 xrb submit [exercise]    # submit through the Exercism CLI
 xrb use <exercise>       # save a downloaded exercise as current
 xrb current              # show the current exercise
@@ -73,6 +75,14 @@ Exercise resolution priority:
 1. Explicit slug, for example `xrb test assembly-line`
 2. Current working directory when inside `XRB_ROOT`
 3. Saved state from the previous `xrb new` or `xrb use`
+
+`xrb irb [exercise]` and `xrb pry [exercise]` open the console in the exercise directory, load the selected solution file, and define a `reload!` helper. After editing the solution file, run this inside the console:
+
+```ruby
+reload!
+```
+
+`reload!` uses Ruby's `load`, so it re-executes the solution file on every call instead of relying on `require`'s one-time load cache. If the file has a syntax or runtime error, the console stays open, prints the load error, and lets you fix the file and run `reload!` again. Pry is optional; install it separately, for example with `gem install pry`, if `xrb pry` reports that Pry is missing.
 
 `xrb test` reads `.exercism/config.json` when available and runs each file listed in `files.test`. Without that config, it preserves the older fallback of requiring a single `*_test.rb` file.
 

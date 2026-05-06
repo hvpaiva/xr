@@ -9,15 +9,15 @@ module Exercism
         @ui = ui
       end
 
-      def run(*args, chdir: nil)
+      def run(*args, chdir: nil, env: {})
         printable = Shellwords.join(args)
         printable = "cd #{Shellwords.escape(chdir)} && #{printable}" if chdir
         @ui.command("$ #{printable}")
 
         ok = if chdir
-          Dir.chdir(chdir) { system(*args) }
+          Dir.chdir(chdir) { run_system(env, args) }
         else
-          system(*args)
+          run_system(env, args)
         end
 
         case ok
@@ -30,6 +30,12 @@ module Exercism
         end
 
         true
+      end
+
+      private
+
+      def run_system(env, args)
+        env.empty? ? system(*args) : system(env, *args)
       end
     end
   end

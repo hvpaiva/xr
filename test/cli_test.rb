@@ -3,7 +3,7 @@
 require_relative "test_helper"
 
 class ExercismRbCliTest < ExercismRbTestCase
-  def test_cli_help_is_english_and_lists_irb
+  def test_cli_help_is_english_and_lists_consoles
     Dir.mktmpdir do |dir|
       code, out, err = run_cli(["help"], root: dir, state_path: File.join(dir, "state.toml"))
 
@@ -11,6 +11,7 @@ class ExercismRbCliTest < ExercismRbTestCase
       assert_empty err
       assert_includes out, "Usage:"
       assert_includes out, "xrb irb [exercise]"
+      assert_includes out, "xrb pry [exercise]"
       assert_includes out, "--no-edit"
       assert_includes out, "run exercise tests"
       refute_match(/[^\x00-\x7F]/, out)
