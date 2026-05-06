@@ -208,10 +208,7 @@ class ExercismRbInstaller
       current = File.readlink(@bin_path)
       return if current == target
 
-      unless @overwrite
-        raise Error, "#{@bin_path} already points to #{current}. Set XRB_INSTALL_OVERWRITE=1 to replace it."
-      end
-
+      warn("#{@bin_path} already points to #{current}; replacing the symlink")
       FileUtils.rm_f(@bin_path)
     elsif File.directory?(@bin_path)
       raise Error, "refusing to replace directory: #{@bin_path}"

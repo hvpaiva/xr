@@ -92,6 +92,35 @@ class ExercismRbInstallTest < ExercismRbTestCase
     end
   end
 
+  def test_installer_replaces_existing_xrb_symlink_without_overwrite
+    skip "git is required" unless git_available?
+
+    Dir.mktmpdir do |dir|
+      source_repo = File.join(dir, "source")
+      install_dir = File.join(dir, "install", "exercism-rb")
+      bin_dir = File.join(dir, "bin")
+      other_checkout = File.join(dir, "other-checkout")
+      FileUtils.mkdir_p([bin_dir, File.join(other_checkout, "bin")])
+      write_fake_xrb(File.join(other_checkout, "bin", "xrb"), version: "9.9.9")
+      FileUtils.ln_s(File.join(other_checkout, "bin", "xrb"), File.join(bin_dir, "xrb"))
+      create_installer_source_repo(source_repo, version: "0.1.0")
+
+      code, out, err = run_installer(
+        "--repo-url", "file://#{source_repo}",
+        "--install-dir", install_dir,
+        "--bin-dir", bin_dir,
+        "--no-exercism",
+        extra_env: path_with(bin_dir)
+      )
+
+      assert_equal 0, code, err
+      assert_includes out, "xrb 0.1.0"
+      assert_includes err, "replacing the symlink"
+      assert File.exist?(File.join(other_checkout, "bin", "xrb"))
+      assert_equal File.join(install_dir, "bin", "xrb"), File.readlink(File.join(bin_dir, "xrb"))
+    end
+  end
+
   def test_installer_auto_mode_keeps_existing_exercism_in_path
     skip "git is required" unless git_available?
 

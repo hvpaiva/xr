@@ -36,7 +36,7 @@ curl -fsSL https://raw.githubusercontent.com/hvpaiva/exercism-rb/main/install.rb
 
 Make sure `~/.local/bin` is in your `PATH`.
 
-If `~/.local/bin/xrb` already exists and points somewhere else, the installer refuses to replace it unless you opt in:
+If `~/.local/bin/xrb` is an existing symlink, the installer replaces the symlink without deleting the old target. If it is a real file or directory, the installer refuses to replace it unless you opt in:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/hvpaiva/exercism-rb/main/install.rb | XRB_INSTALL_OVERWRITE=1 ruby
