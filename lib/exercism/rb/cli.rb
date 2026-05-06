@@ -6,6 +6,24 @@ module Exercism
   module Rb
     class CLI
       COMMANDS = %w[new edit test irb submit use current path list clear help version].freeze
+      COMMAND_METHODS = {
+        "new" => :new_command,
+        "edit" => :edit_command,
+        "test" => :test_command,
+        "irb" => :irb_command,
+        "submit" => :submit_command,
+        "use" => :use_command,
+        "current" => :current_command,
+        "path" => :path_command,
+        "list" => :list_command,
+        "clear" => :clear_command,
+        "help" => :help_command,
+        "-h" => :help_command,
+        "--help" => :help_command,
+        "version" => :version_command,
+        "-v" => :version_command,
+        "--version" => :version_command
+      }.freeze
 
       def self.start(argv, out: $stdout, err: $stderr)
         new(argv, out: out, err: err).start
@@ -23,23 +41,9 @@ module Exercism
 
       def start
         command = @argv.shift || "help"
+        handler = COMMAND_METHODS.fetch(command) { raise Error, "Unknown command: #{command}. Use `xrb help`." }
 
-        case command
-        when "new" then new_command
-        when "edit" then edit_command
-        when "test" then test_command
-        when "irb" then irb_command
-        when "submit" then submit_command
-        when "use" then use_command
-        when "current" then current_command
-        when "path" then path_command
-        when "list" then list_command
-        when "clear" then clear_command
-        when "help", "-h", "--help" then help_command
-        when "version", "-v", "--version" then version_command
-        else
-          raise Error, "Unknown command: #{command}. Use `xrb help`."
-        end
+        __send__(handler)
 
         0
       rescue Error => error

@@ -138,24 +138,6 @@ Set `XRB_EDITOR`, `VISUAL`, or `EDITOR` before running `xrb edit` or `xrb new` w
 XRB_EDITOR="code --wait" xrb edit
 ```
 
-## Source Install
-
-RubyGems is the recommended installation path. If you intentionally want to install directly from the current `main` branch, use the source installer:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hvpaiva/exercism-rb/main/install.rb | ruby
-```
-
-The installer clones or updates the repository at `~/.local/share/exercism-rb` and creates this symlink:
-
-```text
-~/.local/bin/xrb -> ~/.local/share/exercism-rb/bin/xrb
-```
-
-It also installs the Exercism CLI into `~/.local/bin/exercism` when `exercism` is not already available.
-
-Pass `--no-exercism` after `ruby -` to skip the Exercism CLI install, or `--with-exercism` to force-install or update it. If `~/.local/bin/xrb` is a real file or directory, set `XRB_INSTALL_OVERWRITE=1` to allow replacement; existing symlinks are replaced without deleting their old target.
-
 ## Development
 
 Install development dependencies:

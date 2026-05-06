@@ -3,6 +3,20 @@
 require_relative "test_helper"
 
 class ExercismRbCommandRunnerTest < ExercismRbTestCase
+  def test_command_runner_runs_successful_command_in_requested_directory
+    runner = command_runner
+
+    Dir.mktmpdir do |dir|
+      with_fake_commands("ok-command") do |bin_dir, log_path|
+        with_env(fake_env(bin_dir, log_path)) do
+          runner.run("ok-command", "arg", chdir: dir)
+        end
+
+        assert_command_log log_path, command: "ok-command", pwd: dir, args: ["arg"]
+      end
+    end
+  end
+
   def test_command_runner_reports_missing_command
     runner = command_runner
 

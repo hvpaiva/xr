@@ -3,6 +3,14 @@
 require_relative "test_helper"
 
 class ExercismRbStateTest < ExercismRbTestCase
+  def test_state_load_returns_empty_hash_when_file_is_missing
+    Dir.mktmpdir do |dir|
+      state = Exercism::Rb::State.new(path: File.join(dir, "state.toml"))
+
+      assert_equal({}, state.load)
+    end
+  end
+
   def test_state_is_saved_as_flat_toml
     Dir.mktmpdir do |dir|
       state = Exercism::Rb::State.new(path: File.join(dir, "state.toml"))
@@ -46,6 +54,27 @@ class ExercismRbStateTest < ExercismRbTestCase
       assert_equal "two-fer", data.fetch("exercise")
       assert_equal "a\nb", data.fetch("path")
       refute_includes data.keys, "ignored"
+    end
+  end
+
+  def test_state_parses_comments_blank_lines_and_unquoted_values
+    Dir.mktmpdir do |dir|
+      state = Exercism::Rb::State.new(path: File.join(dir, "state.toml"))
+      File.write(state.path, "# comment\n\ntrack = ruby\nexercise = two-fer\n")
+
+      data = state.load
+
+      assert_equal "ruby", data.fetch("track")
+      assert_equal "two-fer", data.fetch("exercise")
+    end
+  end
+
+  def test_state_parses_supported_quoted_escapes
+    Dir.mktmpdir do |dir|
+      state = Exercism::Rb::State.new(path: File.join(dir, "state.toml"))
+      File.write(state.path, %(path = "a\\rb\\tc\\\\d\\"e"\n))
+
+      assert_equal "a\rb\tc\\d\"e", state.load.fetch("path")
     end
   end
 

@@ -2,7 +2,6 @@
 
 require "fileutils"
 require "json"
-require "minitest/autorun"
 require "open3"
 require "rbconfig"
 require "stringio"
@@ -17,6 +16,7 @@ if ENV["COVERAGE"] == "1"
   end
 end
 
+require "minitest/autorun"
 require_relative "../lib/exercism/rb"
 
 module ExercismRbTestHelpers
@@ -74,6 +74,12 @@ module ExercismRbTestHelpers
     [status.exitstatus, out, err]
   end
 
+  def with_cli_workspace
+    Dir.mktmpdir do |dir|
+      yield dir, File.join(dir, "exercism", "ruby"), File.join(dir, "state.toml")
+    end
+  end
+
   def with_fake_commands(*names, bodies: {})
     Dir.mktmpdir do |bin_dir|
       log_path = File.join(bin_dir, "commands.log")
@@ -83,6 +89,31 @@ module ExercismRbTestHelpers
 
       yield bin_dir, log_path
     end
+  end
+
+  def with_cli_fake_commands(*names, bodies: {})
+    with_cli_workspace do |dir, root, state_path|
+      with_fake_commands(*names, bodies: bodies) do |bin_dir, log_path|
+        yield dir, root, state_path, fake_env(bin_dir, log_path), log_path
+      end
+    end
+  end
+
+  def fake_exercism_download_body
+    <<~SH
+      if [ "$1" = "download" ]; then
+        slug=""
+        for arg in "$@"; do
+          case "$arg" in
+            --exercise=*) slug="${arg#--exercise=}" ;;
+          esac
+        done
+        solution=$(printf '%s' "$slug" | tr '-' '_')
+        mkdir -p "$XRB_ROOT/$slug"
+        : > "$XRB_ROOT/$slug/$solution.rb"
+        : > "$XRB_ROOT/$slug/${solution}_test.rb"
+      fi
+    SH
   end
 
   def fake_env(bin_dir, log_path)

@@ -58,7 +58,73 @@ class ExercismRbUiTest < ExercismRbTestCase
     refute_includes out.string, "\e["
   end
 
+  def test_auto_color_uses_tty_output
+    out = tty_string_io
+
+    with_color_env do
+      Exercism::Rb::UI.new(out: out).success("Saved")
+    end
+
+    assert_includes out.string, "\e[32mSaved\e[0m"
+  end
+
+  def test_clicolor_zero_disables_tty_auto_color
+    out = tty_string_io
+
+    with_color_env("CLICOLOR" => "0") do
+      Exercism::Rb::UI.new(out: out).success("Saved")
+    end
+
+    assert_equal "Saved\n", out.string
+  end
+
+  def test_clicolor_force_zero_does_not_force_non_tty_color
+    out = StringIO.new
+
+    with_color_env("CLICOLOR_FORCE" => "0") do
+      Exercism::Rb::UI.new(out: out).success("Saved")
+    end
+
+    refute_includes out.string, "\e["
+  end
+
+  def test_xrb_color_true_and_false_aliases
+    forced = StringIO.new
+    disabled = tty_string_io
+
+    with_color_env("XRB_COLOR" => "true") do
+      Exercism::Rb::UI.new(out: forced).success("Saved")
+    end
+    with_color_env("XRB_COLOR" => "false") do
+      Exercism::Rb::UI.new(out: disabled).success("Saved")
+    end
+
+    assert_includes forced.string, "\e[32mSaved\e[0m"
+    assert_equal "Saved\n", disabled.string
+  end
+
+  def test_formatter_methods_write_expected_plain_output
+    out = StringIO.new
+    ui = Exercism::Rb::UI.new(out: out, color: false)
+
+    ui.title("Title")
+    ui.section("Section")
+    ui.key_value("Path", "/tmp", width: 4)
+    ui.command("$ xrb test")
+
+    assert_equal "Title\nSection\nPath /tmp\n$ xrb test\n", out.string
+    assert_equal "/tmp", ui.path("/tmp")
+    assert_equal "value", ui.highlight("value")
+    assert_equal "muted", ui.muted("muted")
+  end
+
   private
+
+  def tty_string_io
+    StringIO.new.tap do |out|
+      out.define_singleton_method(:tty?) { true }
+    end
+  end
 
   def with_color_env(values = {})
     with_env({

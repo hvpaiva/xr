@@ -24,6 +24,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - CLI status, warning, and error output now uses color without log-style labels.
 - Release process details moved from `README.md` to `CONTRIBUTING.md`.
 
+### Removed
+
+- Removed the legacy source installer; RubyGems is now the only supported installation path.
+
 ### Fixed
 
 - `xrb new` now explains the likely workspace mismatch when download succeeds but the expected exercise directory is missing.

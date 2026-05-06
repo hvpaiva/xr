@@ -6,6 +6,10 @@ module Exercism
   module Rb
     class Exercise
       SLUG_PATTERN = /\A[a-z0-9][a-z0-9-]*\z/
+      FILE_KINDS = {
+        "test" => {config: "test file", fallback: "test file (*_test.rb)"},
+        "solution" => {config: "solution file", fallback: "solution file (.rb)"}
+      }.freeze
 
       attr_reader :slug, :track, :root, :path
 
@@ -36,13 +40,15 @@ module Exercism
       end
 
       def test_files(ambiguity_hint: nil)
-        ensure_exists!
-        configured_files("test", kind: "test file") || [pick_one(fallback_test_files, kind: "test file (*_test.rb)", ambiguity_hint: ambiguity_hint)]
+        exercise_files("test", ambiguity_hint: ambiguity_hint) do
+          fallback_test_files
+        end
       end
 
       def solution_files(ambiguity_hint: nil)
-        ensure_exists!
-        configured_files("solution", kind: "solution file") || [pick_one(fallback_solution_files, kind: "solution file (.rb)", ambiguity_hint: ambiguity_hint)]
+        exercise_files("solution", ambiguity_hint: ambiguity_hint) do
+          fallback_solution_files
+        end
       end
 
       def test_file(ambiguity_hint: nil)
@@ -57,6 +63,13 @@ module Exercism
 
       def config_path
         File.join(@path, ".exercism", "config.json")
+      end
+
+      def exercise_files(config_name, ambiguity_hint:)
+        ensure_exists!
+
+        kinds = FILE_KINDS.fetch(config_name)
+        configured_files(config_name, kind: kinds.fetch(:config)) || [pick_one(yield, kind: kinds.fetch(:fallback), ambiguity_hint: ambiguity_hint)]
       end
 
       def exercism_config
@@ -75,12 +88,23 @@ module Exercism
         config = exercism_config
         return nil if config.nil?
 
+        values = configured_file_values(config, name)
+        return nil if values.nil?
+
+        ensure_configured_files_exist(values, kind: kind)
+      end
+
+      def configured_file_values(config, name)
         files = config.fetch("files", nil)
         return nil if files.nil?
         raise_invalid_config("files must be an object") unless files.is_a?(Hash)
         return nil unless files.key?(name)
 
         values = files.fetch(name)
+        validate_configured_file_list(name, values)
+      end
+
+      def validate_configured_file_list(name, values)
         raise_invalid_config("files.#{name} must be an array") unless values.is_a?(Array)
         raise_invalid_config("files.#{name} must not be empty") if values.empty?
 
@@ -88,7 +112,7 @@ module Exercism
           raise_invalid_config("files.#{name} contains an empty path") unless file.is_a?(String) && !file.strip.empty?
         end
 
-        ensure_configured_files_exist(values, kind: kind)
+        values
       end
 
       def ensure_configured_files_exist(files, kind:)

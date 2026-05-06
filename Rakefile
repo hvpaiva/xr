@@ -19,7 +19,6 @@ desc "Check Ruby syntax for project files"
 task :syntax do
   files = FileList[
     "bin/xrb",
-    "install.rb",
     "lib/**/*.rb",
     "test/**/*.rb",
     "exercism-rb.gemspec",
