@@ -10,10 +10,10 @@ require "rbconfig"
 require "tmpdir"
 require "uri"
 
-class XrInstaller
+class ExercismRbInstaller
   class Error < StandardError; end
 
-  DEFAULT_REPO = "hvpaiva/xr"
+  DEFAULT_REPO = "hvpaiva/exercism-rb"
   DEFAULT_BRANCH = "main"
   DEFAULT_INSTALL_EXERCISM = "auto"
 
@@ -25,20 +25,20 @@ class XrInstaller
   end
 
   def self.warn_message(message)
-    $stderr.puts("xr install: #{message}")
+    $stderr.puts("xrb install: #{message}")
   end
 
   def initialize(argv)
     @argv = argv.dup
-    @repo = ENV.fetch("XR_REPO", DEFAULT_REPO)
-    @branch = ENV.fetch("XR_BRANCH", DEFAULT_BRANCH)
-    @repo_url_explicit = ENV.key?("XR_REPO_URL")
-    @repo_url = ENV.fetch("XR_REPO_URL", "https://github.com/#{@repo}.git")
-    @install_dir = ENV.fetch("XR_INSTALL_DIR", File.join(Dir.home, ".local", "share", "xr"))
-    @bin_dir = ENV.fetch("XR_BIN_DIR", File.join(Dir.home, ".local", "bin"))
-    @install_exercism = ENV.fetch("XR_INSTALL_EXERCISM", DEFAULT_INSTALL_EXERCISM)
-    @exercism_version = ENV.fetch("XR_EXERCISM_VERSION", "latest")
-    @overwrite = ENV["XR_INSTALL_OVERWRITE"] == "1"
+    @repo = ENV.fetch("XRB_REPO", DEFAULT_REPO)
+    @branch = ENV.fetch("XRB_BRANCH", DEFAULT_BRANCH)
+    @repo_url_explicit = ENV.key?("XRB_REPO_URL")
+    @repo_url = ENV.fetch("XRB_REPO_URL", "https://github.com/#{@repo}.git")
+    @install_dir = ENV.fetch("XRB_INSTALL_DIR", File.join(Dir.home, ".local", "share", "exercism-rb"))
+    @bin_dir = ENV.fetch("XRB_BIN_DIR", File.join(Dir.home, ".local", "bin"))
+    @install_exercism = ENV.fetch("XRB_INSTALL_EXERCISM", DEFAULT_INSTALL_EXERCISM)
+    @exercism_version = ENV.fetch("XRB_EXERCISM_VERSION", "latest")
+    @overwrite = ENV["XRB_INSTALL_OVERWRITE"] == "1"
     @tmp_dir = nil
   end
 
@@ -51,9 +51,9 @@ class XrInstaller
       return 0
     end
 
-    Dir.mktmpdir("xr-install.") do |tmp_dir|
+    Dir.mktmpdir("xrb-install.") do |tmp_dir|
       @tmp_dir = tmp_dir
-      install_xr
+      install_xrb
       maybe_install_exercism
     end
 
@@ -65,16 +65,16 @@ class XrInstaller
 
   def usage
     <<~USAGE
-      xr installer
+      exercism-rb installer
 
       Usage:
-        curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.rb | ruby
-        curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.rb | ruby - --no-exercism
+        curl -fsSL https://raw.githubusercontent.com/hvpaiva/exercism-rb/main/install.rb | ruby
+        curl -fsSL https://raw.githubusercontent.com/hvpaiva/exercism-rb/main/install.rb | ruby - --no-exercism
 
       Options:
-        --repo-url <url>          Git clone URL for xr
+        --repo-url <url>          Git clone URL for exercism-rb
         --branch <name>          Git branch to install (default: main)
-        --install-dir <path>     Install checkout path (default: ~/.local/share/xr)
+        --install-dir <path>     Install checkout path (default: ~/.local/share/exercism-rb)
         --bin-dir <path>         Symlink/bin path (default: ~/.local/bin)
         --with-exercism          Install or update the Exercism CLI
         --no-exercism            Do not install the Exercism CLI
@@ -82,14 +82,14 @@ class XrInstaller
         -h, --help               Show this help
 
       Environment:
-        XR_REPO                  GitHub repo slug (default: hvpaiva/xr)
-        XR_REPO_URL              Full Git clone URL
-        XR_BRANCH                Git branch (default: main)
-        XR_INSTALL_DIR           Install checkout path
-        XR_BIN_DIR               Symlink/bin path
-        XR_INSTALL_EXERCISM      auto, always, or never (default: auto)
-        XR_EXERCISM_VERSION      latest or a specific version (default: latest)
-        XR_INSTALL_OVERWRITE     set to 1 to replace conflicting files/directories
+        XRB_REPO                 GitHub repo slug (default: hvpaiva/exercism-rb)
+        XRB_REPO_URL             Full Git clone URL
+        XRB_BRANCH               Git branch (default: main)
+        XRB_INSTALL_DIR          Install checkout path
+        XRB_BIN_DIR              Symlink/bin path
+        XRB_INSTALL_EXERCISM     auto, always, or never (default: auto)
+        XRB_EXERCISM_VERSION     latest or a specific version (default: latest)
+        XRB_INSTALL_OVERWRITE    set to 1 to replace conflicting files/directories
     USAGE
   end
 
@@ -144,10 +144,10 @@ class XrInstaller
 
     @install_dir = File.expand_path(@install_dir)
     @bin_dir = File.expand_path(@bin_dir)
-    @bin_path = File.join(@bin_dir, "xr")
+    @bin_path = File.join(@bin_dir, "xrb")
   end
 
-  def install_xr
+  def install_xrb
     need("git")
     safe_install_dir
 
@@ -155,7 +155,7 @@ class XrInstaller
     FileUtils.mkdir_p(File.dirname(@install_dir))
 
     if Dir.exist?(File.join(@install_dir, ".git"))
-      say("updating xr in #{@install_dir}")
+      say("updating exercism-rb in #{@install_dir}")
       git("remote", "set-url", "origin", @repo_url) if @repo_url_explicit
       git("fetch", "origin", @branch)
       git("checkout", "-q", @branch)
@@ -165,19 +165,19 @@ class XrInstaller
     end
 
     unless Dir.exist?(File.join(@install_dir, ".git"))
-      say("cloning xr from #{@repo_url}")
+      say("cloning exercism-rb from #{@repo_url}")
       run!("git", "clone", "--branch", @branch, @repo_url, @install_dir)
     end
 
-    FileUtils.chmod(0o755, File.join(@install_dir, "bin", "xr"))
-    link_xr
-    say("xr installed at #{@bin_path}")
+    FileUtils.chmod(0o755, File.join(@install_dir, "bin", "xrb"))
+    link_xrb
+    say("xrb installed at #{@bin_path}")
     run!(@bin_path, "version")
   end
 
   def replace_existing_install_dir
     unless @overwrite
-      raise Error, "#{@install_dir} already exists and is not a git checkout. Set XR_INSTALL_OVERWRITE=1 to replace it."
+      raise Error, "#{@install_dir} already exists and is not a git checkout. Set XRB_INSTALL_OVERWRITE=1 to replace it."
     end
 
     safe_overwrite_dir
@@ -192,31 +192,31 @@ class XrInstaller
 
   def safe_overwrite_dir
     safe_install_dir
-    return if File.basename(@install_dir) == "xr"
+    return if File.basename(@install_dir) == "exercism-rb"
 
-    raise Error, "refusing to overwrite non-xr directory: #{@install_dir}"
+    raise Error, "refusing to overwrite non-exercism-rb directory: #{@install_dir}"
   end
 
   def git(*args)
     run!("git", "-C", @install_dir, *args)
   end
 
-  def link_xr
-    target = File.join(@install_dir, "bin", "xr")
+  def link_xrb
+    target = File.join(@install_dir, "bin", "xrb")
 
     if File.symlink?(@bin_path)
       current = File.readlink(@bin_path)
       return if current == target
 
       unless @overwrite
-        raise Error, "#{@bin_path} already points to #{current}. Set XR_INSTALL_OVERWRITE=1 to replace it."
+        raise Error, "#{@bin_path} already points to #{current}. Set XRB_INSTALL_OVERWRITE=1 to replace it."
       end
 
       FileUtils.rm_f(@bin_path)
     elsif File.directory?(@bin_path)
       raise Error, "refusing to replace directory: #{@bin_path}"
     elsif File.exist?(@bin_path)
-      raise Error, "#{@bin_path} already exists. Set XR_INSTALL_OVERWRITE=1 to replace it." unless @overwrite
+      raise Error, "#{@bin_path} already exists. Set XRB_INSTALL_OVERWRITE=1 to replace it." unless @overwrite
 
       FileUtils.rm_f(@bin_path)
     end
@@ -239,7 +239,7 @@ class XrInstaller
     when "never"
       say("skipping Exercism CLI install")
     else
-      raise Error, "invalid XR_INSTALL_EXERCISM value: #{@install_exercism}"
+      raise Error, "invalid XRB_INSTALL_EXERCISM value: #{@install_exercism}"
     end
   end
 
@@ -275,7 +275,7 @@ class XrInstaller
     elsif File.directory?(target)
       raise Error, "refusing to replace directory: #{target}"
     elsif File.exist?(target) && @install_exercism != "always" && !@overwrite
-      raise Error, "#{target} already exists. Use --with-exercism or set XR_INSTALL_OVERWRITE=1 to replace it."
+      raise Error, "#{target} already exists. Use --with-exercism or set XRB_INSTALL_OVERWRITE=1 to replace it."
     end
 
     FileUtils.cp(source, target)
@@ -352,7 +352,7 @@ class XrInstaller
 
     Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       http_request = Net::HTTP::Get.new(uri)
-      http_request["User-Agent"] = "xr-installer"
+      http_request["User-Agent"] = "xrb-installer"
       response = http.request(http_request)
 
       case response
@@ -391,11 +391,11 @@ class XrInstaller
   end
 
   def say(message)
-    puts("xr install: #{message}")
+    puts("xrb install: #{message}")
   end
 
   def warn(message)
-    $stderr.puts("xr install: warning: #{message}")
+    $stderr.puts("xrb install: warning: #{message}")
   end
 
   def path_include?(path)
@@ -403,4 +403,4 @@ class XrInstaller
   end
 end
 
-exit XrInstaller.start(ARGV) if $PROGRAM_NAME == __FILE__
+exit ExercismRbInstaller.start(ARGV) if $PROGRAM_NAME == __FILE__

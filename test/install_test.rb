@@ -2,7 +2,7 @@
 
 require_relative "test_helper"
 
-class XrInstallTest < XrTestCase
+class ExercismRbInstallTest < ExercismRbTestCase
   INSTALL_SCRIPT = File.join(PROJECT_ROOT, "install.rb")
 
   def test_installer_installs_from_local_repo_without_exercism
@@ -10,7 +10,7 @@ class XrInstallTest < XrTestCase
 
     Dir.mktmpdir do |dir|
       source_repo = File.join(dir, "source")
-      install_dir = File.join(dir, "install", "xr")
+      install_dir = File.join(dir, "install", "exercism-rb")
       bin_dir = File.join(dir, "bin")
       create_installer_source_repo(source_repo, version: "0.1.0")
 
@@ -23,12 +23,12 @@ class XrInstallTest < XrTestCase
       )
 
       assert_equal 0, code, err
-      assert_includes out, "xr install: cloning xr"
-      assert_includes out, "xr installed at #{File.join(bin_dir, 'xr')}"
-      assert_includes out, "xr 0.1.0"
-      refute_includes err, "xr install: warning"
-      assert File.symlink?(File.join(bin_dir, "xr"))
-      assert_equal File.join(install_dir, "bin", "xr"), File.readlink(File.join(bin_dir, "xr"))
+      assert_includes out, "xrb install: cloning exercism-rb"
+      assert_includes out, "xrb installed at #{File.join(bin_dir, 'xrb')}"
+      assert_includes out, "xrb 0.1.0"
+      refute_includes err, "xrb install: warning"
+      assert File.symlink?(File.join(bin_dir, "xrb"))
+      assert_equal File.join(install_dir, "bin", "xrb"), File.readlink(File.join(bin_dir, "xrb"))
     end
   end
 
@@ -37,7 +37,7 @@ class XrInstallTest < XrTestCase
 
     Dir.mktmpdir do |dir|
       source_repo = File.join(dir, "source")
-      install_dir = File.join(dir, "install", "xr")
+      install_dir = File.join(dir, "install", "exercism-rb")
       bin_dir = File.join(dir, "bin")
       create_installer_source_repo(source_repo, version: "0.1.0")
 
@@ -50,9 +50,9 @@ class XrInstallTest < XrTestCase
       )
       assert_equal 0, code, err
 
-      write_fake_xr(File.join(source_repo, "bin", "xr"), version: "0.2.0")
-      git!(source_repo, "add", "bin/xr")
-      git!(source_repo, "-c", "user.name=xr tests", "-c", "user.email=xr@example.test", "commit", "-m", "Update fake xr")
+      write_fake_xrb(File.join(source_repo, "bin", "xrb"), version: "0.2.0")
+      git!(source_repo, "add", "bin/xrb")
+      git!(source_repo, "-c", "user.name=exercism-rb tests", "-c", "user.email=exercism-rb@example.test", "commit", "-m", "Update fake xrb")
 
       code, out, err = run_installer(
         "--repo-url", "file://#{source_repo}",
@@ -63,20 +63,20 @@ class XrInstallTest < XrTestCase
       )
 
       assert_equal 0, code, err
-      assert_includes out, "xr install: updating xr in #{install_dir}"
-      assert_includes out, "xr 0.2.0"
+      assert_includes out, "xrb install: updating exercism-rb in #{install_dir}"
+      assert_includes out, "xrb 0.2.0"
     end
   end
 
-  def test_installer_refuses_existing_xr_binary_without_overwrite
+  def test_installer_refuses_existing_xrb_binary_without_overwrite
     skip "git is required" unless git_available?
 
     Dir.mktmpdir do |dir|
       source_repo = File.join(dir, "source")
-      install_dir = File.join(dir, "install", "xr")
+      install_dir = File.join(dir, "install", "exercism-rb")
       bin_dir = File.join(dir, "bin")
       FileUtils.mkdir_p(bin_dir)
-      File.write(File.join(bin_dir, "xr"), "already here\n")
+      File.write(File.join(bin_dir, "xrb"), "already here\n")
       create_installer_source_repo(source_repo, version: "0.1.0")
 
       code, _out, err = run_installer(
@@ -87,8 +87,8 @@ class XrInstallTest < XrTestCase
       )
 
       assert_equal 1, code
-      assert_includes err, "#{File.join(bin_dir, 'xr')} already exists"
-      assert_equal "already here\n", File.read(File.join(bin_dir, "xr"))
+      assert_includes err, "#{File.join(bin_dir, 'xrb')} already exists"
+      assert_equal "already here\n", File.read(File.join(bin_dir, "xrb"))
     end
   end
 
@@ -97,7 +97,7 @@ class XrInstallTest < XrTestCase
 
     Dir.mktmpdir do |dir|
       source_repo = File.join(dir, "source")
-      install_dir = File.join(dir, "install", "xr")
+      install_dir = File.join(dir, "install", "exercism-rb")
       bin_dir = File.join(dir, "bin")
       fake_bin = File.join(dir, "fake-bin")
       FileUtils.mkdir_p(fake_bin)
@@ -133,11 +133,11 @@ class XrInstallTest < XrTestCase
         "--install-dir", install_dir,
         "--bin-dir", bin_dir,
         "--no-exercism",
-        extra_env: { "XR_INSTALL_OVERWRITE" => "1" }
+        extra_env: { "XRB_INSTALL_OVERWRITE" => "1" }
       )
 
       assert_equal 1, code
-      assert_includes err, "refusing to overwrite non-xr directory"
+      assert_includes err, "refusing to overwrite non-exercism-rb directory"
       assert_equal "do not delete\n", File.read(File.join(install_dir, "keep"))
     end
   end
@@ -153,14 +153,14 @@ class XrInstallTest < XrTestCase
 
   def clean_installer_env
     {
-      "XR_REPO" => nil,
-      "XR_REPO_URL" => nil,
-      "XR_BRANCH" => nil,
-      "XR_INSTALL_DIR" => nil,
-      "XR_BIN_DIR" => nil,
-      "XR_INSTALL_EXERCISM" => nil,
-      "XR_EXERCISM_VERSION" => nil,
-      "XR_INSTALL_OVERWRITE" => nil
+      "XRB_REPO" => nil,
+      "XRB_REPO_URL" => nil,
+      "XRB_BRANCH" => nil,
+      "XRB_INSTALL_DIR" => nil,
+      "XRB_BIN_DIR" => nil,
+      "XRB_INSTALL_EXERCISM" => nil,
+      "XRB_EXERCISM_VERSION" => nil,
+      "XRB_INSTALL_OVERWRITE" => nil
     }
   end
 
@@ -174,19 +174,19 @@ class XrInstallTest < XrTestCase
 
   def create_installer_source_repo(path, version:)
     FileUtils.mkdir_p(File.join(path, "bin"))
-    write_fake_xr(File.join(path, "bin", "xr"), version: version)
+    write_fake_xrb(File.join(path, "bin", "xrb"), version: version)
     git!(path, "init", "-b", "main")
     git!(path, "add", ".")
-    git!(path, "-c", "user.name=xr tests", "-c", "user.email=xr@example.test", "commit", "-m", "Initial fake xr")
+    git!(path, "-c", "user.name=exercism-rb tests", "-c", "user.email=exercism-rb@example.test", "commit", "-m", "Initial fake xrb")
   end
 
-  def write_fake_xr(path, version:)
+  def write_fake_xrb(path, version:)
     File.write(path, <<~SH)
       #!/usr/bin/env sh
       if [ "${1:-}" = "version" ]; then
-        printf 'xr #{version}\n'
+        printf 'xrb #{version}\n'
       else
-        printf 'fake xr #{version}\n'
+        printf 'fake xrb #{version}\n'
       fi
     SH
     File.chmod(0o755, path)

@@ -2,13 +2,13 @@
 
 require_relative "test_helper"
 
-class XrSystemTest < XrTestCase
+class ExercismRbSystemTest < ExercismRbTestCase
   def test_bin_version_runs_as_user_invokes_it
     Dir.mktmpdir do |dir|
       code, out, err = run_bin("version", root: dir, state_path: File.join(dir, "state.toml"))
 
       assert_equal 0, code
-      assert_equal "xr #{Xr::VERSION}\n", out
+      assert_equal "xrb #{Exercism::Rb::VERSION}\n", out
       assert_empty err
     end
   end
@@ -19,7 +19,7 @@ class XrSystemTest < XrTestCase
 
       assert_equal 0, code
       assert_includes out, "Usage:"
-      assert_includes out, "xr test [exercise]"
+      assert_includes out, "xrb test [exercise]"
       assert_empty err
     end
   end

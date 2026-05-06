@@ -2,7 +2,7 @@
 
 require_relative "test_helper"
 
-class XrCliTest < XrTestCase
+class ExercismRbCliTest < ExercismRbTestCase
   def test_cli_help_is_english_and_lists_irb
     Dir.mktmpdir do |dir|
       code, out, err = run_cli(["help"], root: dir, state_path: File.join(dir, "state.toml"))
@@ -10,7 +10,7 @@ class XrCliTest < XrTestCase
       assert_equal 0, code
       assert_empty err
       assert_includes out, "Usage:"
-      assert_includes out, "xr irb [exercise]"
+      assert_includes out, "xrb irb [exercise]"
       assert_includes out, "run the exercise test file"
       refute_match(/[^\x00-\x7F]/, out)
     end
@@ -58,7 +58,7 @@ class XrCliTest < XrTestCase
       root = File.join(dir, "exercism", "ruby")
       state_path = File.join(dir, "state.toml")
       missing_dir = File.join(root, "two-fer")
-      Xr::State.new(path: state_path).save(track: "ruby", exercise: "two-fer", path: missing_dir)
+      Exercism::Rb::State.new(path: state_path).save(track: "ruby", exercise: "two-fer", path: missing_dir)
 
       code, out, err = run_cli(["current"], root: root, state_path: state_path)
 
@@ -156,7 +156,7 @@ class XrCliTest < XrTestCase
       exercise_dir = create_exercise(root, "two-fer")
 
       with_fake_commands("ruby") do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_FAKE_EXIT" => "1")
+        env = fake_env(bin_dir, log_path).merge("XRB_FAKE_EXIT" => "1")
         code, _out, err = run_cli(["test", "two-fer"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 1, code
@@ -191,7 +191,7 @@ class XrCliTest < XrTestCase
       create_exercise(root, "two-fer")
 
       with_fake_commands("irb") do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_FAKE_EXIT" => "1")
+        env = fake_env(bin_dir, log_path).merge("XRB_FAKE_EXIT" => "1")
         code, _out, err = run_cli(["irb", "two-fer"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 1, code
@@ -224,7 +224,7 @@ class XrCliTest < XrTestCase
       create_exercise(root, "two-fer")
 
       with_fake_commands("exercism") do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_FAKE_EXIT" => "1")
+        env = fake_env(bin_dir, log_path).merge("XRB_FAKE_EXIT" => "1")
         code, _out, err = run_cli(["submit", "two-fer"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 1, code
@@ -240,7 +240,7 @@ class XrCliTest < XrTestCase
       exercise_dir = create_exercise(root, "two-fer")
 
       with_fake_commands("fake-editor") do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_EDITOR" => "fake-editor --wait")
+        env = fake_env(bin_dir, log_path).merge("XRB_EDITOR" => "fake-editor --wait")
         code, out, err = run_cli(["edit", "two-fer"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 0, code
@@ -261,11 +261,11 @@ class XrCliTest < XrTestCase
         ["edit", "two-fer"],
         root: root,
         state_path: state_path,
-        extra_env: { "XR_EDITOR" => "fake-editor \"" }
+        extra_env: { "XRB_EDITOR" => "fake-editor \"" }
       )
 
       assert_equal 1, code
-      assert_includes err, "Invalid editor in XR_EDITOR/VISUAL/EDITOR"
+      assert_includes err, "Invalid editor in XRB_EDITOR/VISUAL/EDITOR"
     end
   end
 
@@ -279,11 +279,11 @@ class XrCliTest < XrTestCase
         ["edit", "two-fer"],
         root: root,
         state_path: state_path,
-        extra_env: { "XR_EDITOR" => "" }
+        extra_env: { "XRB_EDITOR" => "" }
       )
 
       assert_equal 1, code
-      assert_includes err, "Invalid editor in XR_EDITOR/VISUAL/EDITOR"
+      assert_includes err, "Invalid editor in XRB_EDITOR/VISUAL/EDITOR"
     end
   end
 
@@ -296,7 +296,7 @@ class XrCliTest < XrTestCase
       File.write(File.join(exercise_dir, "two_fer_test.rb"), "")
 
       with_fake_commands("fake-editor") do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_EDITOR" => "fake-editor")
+        env = fake_env(bin_dir, log_path).merge("XRB_EDITOR" => "fake-editor")
         code, out, err = run_cli(["edit", "two-fer"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 0, code
@@ -320,21 +320,21 @@ class XrCliTest < XrTestCase
             esac
           done
           solution=$(printf '%s' "$slug" | tr '-' '_')
-          mkdir -p "$XR_ROOT/$slug"
-          : > "$XR_ROOT/$slug/$solution.rb"
-          : > "$XR_ROOT/$slug/${solution}_test.rb"
+          mkdir -p "$XRB_ROOT/$slug"
+          : > "$XRB_ROOT/$slug/$solution.rb"
+          : > "$XRB_ROOT/$slug/${solution}_test.rb"
         fi
       SH
 
       with_fake_commands("exercism", "fake-editor", bodies: { "exercism" => exercism_body }) do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_EDITOR" => "fake-editor")
+        env = fake_env(bin_dir, log_path).merge("XRB_EDITOR" => "fake-editor")
         code, out, err = run_cli(["new", "assembly-line"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 0, code
         assert_empty err
         assert_includes out, "Downloading assembly-line"
         assert_includes out, "Opening assembly-line"
-        assert_equal "assembly-line", Xr::State.new(path: state_path).load.fetch("exercise")
+        assert_equal "assembly-line", Exercism::Rb::State.new(path: state_path).load.fetch("exercise")
         assert_command_sequence(
           log_path,
           { command: "exercism", pwd: Dir.pwd, args: ["download", "--track=ruby", "--exercise=assembly-line"] },
@@ -350,7 +350,7 @@ class XrCliTest < XrTestCase
       state_path = File.join(dir, "state.toml")
 
       with_fake_commands("exercism", "fake-editor") do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_EDITOR" => "fake-editor", "XR_FAKE_EXIT" => "1")
+        env = fake_env(bin_dir, log_path).merge("XRB_EDITOR" => "fake-editor", "XRB_FAKE_EXIT" => "1")
         code, _out, err = run_cli(["new", "assembly-line"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 1, code
@@ -370,7 +370,7 @@ class XrCliTest < XrTestCase
       state_path = File.join(dir, "state.toml")
 
       with_fake_commands("exercism", "fake-editor") do |bin_dir, log_path|
-        env = fake_env(bin_dir, log_path).merge("XR_EDITOR" => "fake-editor")
+        env = fake_env(bin_dir, log_path).merge("XRB_EDITOR" => "fake-editor")
         code, _out, err = run_cli(["new", "assembly-line"], root: root, state_path: state_path, extra_env: env)
 
         assert_equal 1, code

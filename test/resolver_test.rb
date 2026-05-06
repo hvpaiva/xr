@@ -2,16 +2,16 @@
 
 require_relative "test_helper"
 
-class XrResolverTest < XrTestCase
+class ExercismRbResolverTest < ExercismRbTestCase
   def test_resolver_uses_explicit_slug_first
     Dir.mktmpdir do |dir|
       root = File.join(dir, "exercism", "ruby")
       explicit_dir = create_exercise(root, "two-fer")
       state_dir = create_exercise(root, "assembly-line")
-      state = Xr::State.new(path: File.join(dir, "state.toml"))
+      state = Exercism::Rb::State.new(path: File.join(dir, "state.toml"))
       state.save(track: "ruby", exercise: "assembly-line", path: state_dir)
 
-      resolver = Xr::Resolver.new(state: state, track: "ruby", root: root)
+      resolver = Exercism::Rb::Resolver.new(state: state, track: "ruby", root: root)
       exercise = resolver.resolve("two-fer")
 
       assert_equal "two-fer", exercise.slug
@@ -23,10 +23,10 @@ class XrResolverTest < XrTestCase
     Dir.mktmpdir do |dir|
       root = File.join(dir, "exercism", "ruby")
       exercise_dir = create_exercise(root, "assembly-line")
-      state = Xr::State.new(path: File.join(dir, "state.toml"))
+      state = Exercism::Rb::State.new(path: File.join(dir, "state.toml"))
       state.save(track: "ruby", exercise: "assembly-line", path: exercise_dir)
 
-      resolver = Xr::Resolver.new(state: state, track: "ruby", root: root)
+      resolver = Exercism::Rb::Resolver.new(state: state, track: "ruby", root: root)
       exercise = resolver.resolve
 
       assert_equal "assembly-line", exercise.slug
@@ -39,10 +39,10 @@ class XrResolverTest < XrTestCase
       root = File.join(dir, "exercism", "ruby")
       current_dir = create_exercise(root, "two-fer")
       state_dir = create_exercise(root, "assembly-line")
-      state = Xr::State.new(path: File.join(dir, "state.toml"))
+      state = Exercism::Rb::State.new(path: File.join(dir, "state.toml"))
       state.save(track: "ruby", exercise: "assembly-line", path: state_dir)
 
-      resolver = Xr::Resolver.new(state: state, track: "ruby", root: root)
+      resolver = Exercism::Rb::Resolver.new(state: state, track: "ruby", root: root)
       nested_dir = File.join(current_dir, "nested")
       FileUtils.mkdir_p(nested_dir)
 
@@ -54,9 +54,9 @@ class XrResolverTest < XrTestCase
 
   def test_resolver_reports_missing_current_exercise
     Dir.mktmpdir do |dir|
-      resolver = Xr::Resolver.new(state: Xr::State.new(path: File.join(dir, "state.toml")), root: dir)
+      resolver = Exercism::Rb::Resolver.new(state: Exercism::Rb::State.new(path: File.join(dir, "state.toml")), root: dir)
 
-      error = assert_raises(Xr::Error) { resolver.resolve }
+      error = assert_raises(Exercism::Rb::Error) { resolver.resolve }
 
       assert_includes error.message, "No current exercise"
     end

@@ -7,9 +7,9 @@ require "rbconfig"
 require "stringio"
 require "tmpdir"
 
-require_relative "../lib/xr"
+require_relative "../lib/exercism/rb"
 
-module XrTestHelpers
+module ExercismRbTestHelpers
   PROJECT_ROOT = File.expand_path("..", __dir__)
   RUBY = RbConfig.ruby
 
@@ -32,24 +32,24 @@ module XrTestHelpers
     out = StringIO.new
     err = StringIO.new
     env = {
-      "XR_ROOT" => root,
-      "XR_STATE" => state_path,
-      "XR_TRACK" => "ruby"
+      "XRB_ROOT" => root,
+      "XRB_STATE" => state_path,
+      "XRB_TRACK" => "ruby"
     }.merge(extra_env)
 
-    code = with_env(env) { Xr::CLI.start(argv, out: out, err: err) }
+    code = with_env(env) { Exercism::Rb::CLI.start(argv, out: out, err: err) }
 
     [code, out.string, err.string]
   end
 
   def run_bin(*args, root:, state_path:, extra_env: {})
     env = {
-      "XR_ROOT" => root,
-      "XR_STATE" => state_path,
-      "XR_TRACK" => "ruby"
+      "XRB_ROOT" => root,
+      "XRB_STATE" => state_path,
+      "XRB_TRACK" => "ruby"
     }.merge(extra_env)
 
-    out, err, status = Open3.capture3(env, RUBY, File.join(PROJECT_ROOT, "bin/xr"), *args)
+    out, err, status = Open3.capture3(env, RUBY, File.join(PROJECT_ROOT, "bin/xrb"), *args)
 
     [status.exitstatus, out, err]
   end
@@ -68,7 +68,7 @@ module XrTestHelpers
   def fake_env(bin_dir, log_path)
     {
       "PATH" => "#{bin_dir}:#{ENV.fetch('PATH')}",
-      "XR_COMMAND_LOG" => log_path
+      "XRB_COMMAND_LOG" => log_path
     }
   end
 
@@ -84,9 +84,9 @@ module XrTestHelpers
           printf '[%s]' "$arg"
         done
         printf '\n'
-      } >> "$XR_COMMAND_LOG"
+      } >> "$XRB_COMMAND_LOG"
       #{body}
-      exit "${XR_FAKE_EXIT:-0}"
+      exit "${XRB_FAKE_EXIT:-0}"
     SH
     File.chmod(0o755, path)
   end
@@ -122,6 +122,6 @@ module XrTestHelpers
   end
 end
 
-class XrTestCase < Minitest::Test
-  include XrTestHelpers
+class ExercismRbTestCase < Minitest::Test
+  include ExercismRbTestHelpers
 end

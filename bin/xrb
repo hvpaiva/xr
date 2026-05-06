@@ -3,6 +3,6 @@
 
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
-require "xr"
+require "exercism/rb"
 
-exit Xr::CLI.start(ARGV)
+exit Exercism::Rb::CLI.start(ARGV)
