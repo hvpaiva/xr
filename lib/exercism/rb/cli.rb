@@ -173,6 +173,7 @@ module Exercism
         target = editable_target(exercise)
         editor_args = editor_args_from_config
         raise Error, "Invalid editor in XRB_EDITOR/VISUAL/EDITOR." if editor_args.empty?
+        ensure_editor_available!(editor_args.first, chdir: exercise.path)
 
         @ui.info("Opening #{exercise.slug}...")
         @runner.run(*editor_args, target, chdir: exercise.path)
@@ -182,6 +183,31 @@ module Exercism
         Shellwords.split(Config.editor)
       rescue ArgumentError => e
         raise Error, "Invalid editor in XRB_EDITOR/VISUAL/EDITOR: #{e.message}"
+      end
+
+      def ensure_editor_available!(command, chdir:)
+        return if editor_command_available?(command, chdir: chdir)
+
+        raise Error, "Editor not found: #{command}. Set XRB_EDITOR, VISUAL, or EDITOR to an installed executable."
+      end
+
+      def editor_command_available?(command, chdir:)
+        if command_path?(command)
+          return executable_file?(File.absolute_path(command, chdir))
+        end
+
+        ENV.fetch("PATH", "").split(File::PATH_SEPARATOR).any? do |dir|
+          candidate_dir = dir.empty? ? "." : dir
+          executable_file?(File.absolute_path(File.join(candidate_dir, command), chdir))
+        end
+      end
+
+      def command_path?(command)
+        command.include?(File::SEPARATOR) || (File::ALT_SEPARATOR && command.include?(File::ALT_SEPARATOR))
+      end
+
+      def executable_file?(path)
+        File.file?(path) && File.executable?(path)
       end
 
       def editable_target(exercise)

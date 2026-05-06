@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "test_helper"
+require_relative "../install"
 
 class ExercismRbInstallTest < ExercismRbTestCase
   INSTALL_SCRIPT = File.join(PROJECT_ROOT, "install.rb")
@@ -144,6 +145,41 @@ class ExercismRbInstallTest < ExercismRbTestCase
       assert_includes out, "exercism already installed: #{File.join(fake_bin, 'exercism')}"
       refute File.exist?(File.join(bin_dir, "exercism"))
     end
+  end
+
+  def test_installer_http_get_sets_explicit_timeouts
+    response = Net::HTTPOK.new("1.1", "200", "OK")
+    fake_http = Class.new do
+      attr_accessor :open_timeout, :read_timeout, :write_timeout
+      attr_reader :recorded_request
+
+      def initialize(response)
+        @response = response
+      end
+
+      def request(request)
+        @recorded_request = request
+        @response
+      end
+    end.new(response)
+    start_args = nil
+    original_start = Net::HTTP.method(:start)
+
+    Net::HTTP.define_singleton_method(:start) do |host, port, use_ssl:, &block|
+      start_args = { host: host, port: port, use_ssl: use_ssl }
+      block.call(fake_http)
+    end
+
+    result = ExercismRbInstaller.new([]).send(:http_get, URI("https://example.test/archive.tar.gz"))
+
+    assert_same response, result
+    assert_equal({ host: "example.test", port: 443, use_ssl: true }, start_args)
+    assert_equal ExercismRbInstaller::HTTP_OPEN_TIMEOUT, fake_http.open_timeout
+    assert_equal ExercismRbInstaller::HTTP_READ_TIMEOUT, fake_http.read_timeout
+    assert_equal ExercismRbInstaller::HTTP_WRITE_TIMEOUT, fake_http.write_timeout
+    assert_equal "xrb-installer", fake_http.recorded_request["User-Agent"]
+  ensure
+    Net::HTTP.define_singleton_method(:start, original_start) if original_start
   end
 
   def test_installer_refuses_broad_overwrite_directory

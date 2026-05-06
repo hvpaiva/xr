@@ -251,6 +251,25 @@ class ExercismRbCliTest < ExercismRbTestCase
     end
   end
 
+  def test_cli_edit_reports_missing_editor_command
+    Dir.mktmpdir do |dir|
+      root = File.join(dir, "exercism", "ruby")
+      state_path = File.join(dir, "state.toml")
+      create_exercise(root, "two-fer")
+
+      code, _out, err = run_cli(
+        ["edit", "two-fer"],
+        root: root,
+        state_path: state_path,
+        extra_env: { "XRB_EDITOR" => "definitely-missing-xrb-editor --wait" }
+      )
+
+      assert_equal 1, code
+      assert_includes err, "Editor not found: definitely-missing-xrb-editor"
+      refute_includes err, "Command failed"
+    end
+  end
+
   def test_cli_edit_reports_invalid_editor_command
     Dir.mktmpdir do |dir|
       root = File.join(dir, "exercism", "ruby")

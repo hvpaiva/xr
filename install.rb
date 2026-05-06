@@ -7,6 +7,7 @@ require "json"
 require "net/http"
 require "openssl"
 require "rbconfig"
+require "timeout"
 require "tmpdir"
 require "uri"
 
@@ -16,6 +17,10 @@ class ExercismRbInstaller
   DEFAULT_REPO = "hvpaiva/exercism-rb"
   DEFAULT_BRANCH = "main"
   DEFAULT_INSTALL_EXERCISM = "auto"
+  HTTP_OPEN_TIMEOUT = 10
+  HTTP_READ_TIMEOUT = 30
+  HTTP_WRITE_TIMEOUT = 30
+  HTTP_REQUEST_TIMEOUT = 120
 
   def self.start(argv)
     new(argv).run
@@ -348,9 +353,10 @@ class ExercismRbInstaller
     raise Error, "refusing non-HTTPS download: #{uri}" unless uri.scheme == "https"
 
     Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+      configure_http_timeouts(http)
       http_request = Net::HTTP::Get.new(uri)
       http_request["User-Agent"] = "xrb-installer"
-      response = http.request(http_request)
+      response = Timeout.timeout(HTTP_REQUEST_TIMEOUT) { http.request(http_request) }
 
       case response
       when Net::HTTPSuccess
@@ -364,6 +370,12 @@ class ExercismRbInstaller
         raise Error, "failed to download #{uri}: HTTP #{response.code}"
       end
     end
+  end
+
+  def configure_http_timeouts(http)
+    http.open_timeout = HTTP_OPEN_TIMEOUT
+    http.read_timeout = HTTP_READ_TIMEOUT
+    http.write_timeout = HTTP_WRITE_TIMEOUT if http.respond_to?(:write_timeout=)
   end
 
   def need(command)
