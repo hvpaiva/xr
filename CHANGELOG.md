@@ -7,8 +7,6 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## Unreleased
 
-## 0.3.0 - 2026-05-06
-
 ### Added
 
 - `xrb pry` for opening Pry in the current exercise with the solution loaded and `reload!` available.
