@@ -3,9 +3,9 @@
 require_relative "test_helper"
 
 class XrInstallTest < XrTestCase
-  INSTALL_SCRIPT = File.join(PROJECT_ROOT, "install.sh")
+  INSTALL_SCRIPT = File.join(PROJECT_ROOT, "install.rb")
 
-  def test_install_script_installs_from_local_repo_without_exercism
+  def test_installer_installs_from_local_repo_without_exercism
     skip "git is required" unless git_available?
 
     Dir.mktmpdir do |dir|
@@ -32,7 +32,7 @@ class XrInstallTest < XrTestCase
     end
   end
 
-  def test_install_script_updates_existing_checkout
+  def test_installer_updates_existing_checkout
     skip "git is required" unless git_available?
 
     Dir.mktmpdir do |dir|
@@ -68,7 +68,7 @@ class XrInstallTest < XrTestCase
     end
   end
 
-  def test_install_script_refuses_existing_xr_binary_without_overwrite
+  def test_installer_refuses_existing_xr_binary_without_overwrite
     skip "git is required" unless git_available?
 
     Dir.mktmpdir do |dir|
@@ -92,7 +92,7 @@ class XrInstallTest < XrTestCase
     end
   end
 
-  def test_install_script_auto_mode_keeps_existing_exercism_in_path
+  def test_installer_auto_mode_keeps_existing_exercism_in_path
     skip "git is required" unless git_available?
 
     Dir.mktmpdir do |dir|
@@ -117,7 +117,7 @@ class XrInstallTest < XrTestCase
     end
   end
 
-  def test_install_script_refuses_broad_overwrite_directory
+  def test_installer_refuses_broad_overwrite_directory
     skip "git is required" unless git_available?
 
     Dir.mktmpdir do |dir|
@@ -146,7 +146,7 @@ class XrInstallTest < XrTestCase
 
   def run_installer(*args, extra_env: {})
     env = clean_installer_env.merge(extra_env)
-    out, err, status = Open3.capture3(env, "sh", INSTALL_SCRIPT, *args)
+    out, err, status = Open3.capture3(env, RUBY, INSTALL_SCRIPT, *args)
 
     [status.exitstatus, out, err]
   end

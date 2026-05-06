@@ -9,7 +9,7 @@ It remembers the current exercise, runs commands from the right exercise directo
 Install with one command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.rb | ruby
 ```
 
 The installer clones or updates the repository at `~/.local/share/xr` and creates this symlink:
@@ -23,13 +23,13 @@ It also installs the Exercism CLI into `~/.local/bin/exercism` when `exercism` i
 To skip the Exercism CLI install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.sh | sh -s -- --no-exercism
+curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.rb | ruby - --no-exercism
 ```
 
 To force-install or update the Exercism CLI:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.sh | sh -s -- --with-exercism
+curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.rb | ruby - --with-exercism
 ```
 
 Make sure `~/.local/bin` is in your `PATH`.
@@ -37,14 +37,15 @@ Make sure `~/.local/bin` is in your `PATH`.
 If `~/.local/bin/xr` already exists and points somewhere else, the installer refuses to replace it unless you opt in:
 
 ```bash
-XR_INSTALL_OVERWRITE=1 curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.rb | XR_INSTALL_OVERWRITE=1 ruby
 ```
 
 ## Requirements
 
 - Ruby 3.2+
 - Git
-- curl or wget when the installer needs to download the Exercism CLI
+- curl for the one-line install command
+- tar when the installer needs to download the Exercism CLI
 - Exercism CLI for `xr new` and `xr submit` if you skip automatic install
 
 The installer installs the Exercism binary, but it does not configure your Exercism API token. Configure it separately:
@@ -125,13 +126,14 @@ XR_EDITOR="code --wait" xr edit
 Run the installer again:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/hvpaiva/xr/main/install.rb | ruby
 ```
 
 ## Local Development
 
 ```bash
 ruby -Ilib:test test/xr_test.rb
+ruby -c install.rb
 ruby -c bin/xr
 ruby -c lib/xr.rb
 ruby -c lib/xr/*.rb
