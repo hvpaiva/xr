@@ -144,7 +144,7 @@ module Xr
         Usage:
           xr new <exercise>       download, save as current, and open the editor
           xr edit [exercise]      open the editor for an exercise
-          xr test [exercise]      run ruby -r minitest/pride *_test.rb
+          xr test [exercise]      run the exercise test file with minitest/pride
           xr irb [exercise]       open irb -r ./<solution>.rb --simple-prompt
           xr submit [exercise]    submit the solution .rb file
           xr use <exercise>       save a downloaded exercise as current
@@ -170,11 +170,17 @@ module Xr
 
     def edit_exercise(exercise)
       target = editable_target(exercise)
-      editor_args = Shellwords.split(Config.editor)
+      editor_args = editor_args_from_config
       raise Error, "Invalid editor in XR_EDITOR/VISUAL/EDITOR." if editor_args.empty?
 
       @ui.info("Opening #{exercise.slug}...")
       @runner.run(*editor_args, target, chdir: exercise.path)
+    end
+
+    def editor_args_from_config
+      Shellwords.split(Config.editor)
+    rescue ArgumentError => e
+      raise Error, "Invalid editor in XR_EDITOR/VISUAL/EDITOR: #{e.message}"
     end
 
     def editable_target(exercise)

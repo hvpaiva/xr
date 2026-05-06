@@ -74,7 +74,7 @@ xr submit
 ```bash
 xr new <exercise>       # download, save as current, and open the editor
 xr edit [exercise]      # open the editor for an exercise
-xr test [exercise]      # run ruby -r minitest/pride *_test.rb
+xr test [exercise]      # run the exercise test file with minitest/pride
 xr irb [exercise]       # open irb -r ./<solution>.rb --simple-prompt
 xr submit [exercise]    # submit the solution .rb file
 xr use <exercise>       # save a downloaded exercise as current
@@ -89,6 +89,8 @@ Exercise resolution priority:
 1. Explicit slug, for example `xr test assembly-line`
 2. Current working directory when inside `XR_ROOT`
 3. Saved state from the previous `xr new` or `xr use`
+
+`xr test` expects a single `*_test.rb` file in the exercise directory and reports an ambiguity if more than one is present.
 
 ## State
 
@@ -115,6 +117,8 @@ XR_TRACK=ruby                # Exercism track
 XR_EDITOR=nvim               # editor used by xr new/edit
 XR_STATE=~/.local/state/xr/state.toml
 ```
+
+`xr new` uses `exercism download`, which downloads into the workspace configured in the Exercism CLI. If you customize `XR_ROOT`, configure the Exercism workspace so its track directory matches it, for example `exercism configure --workspace ~/exercism` for `XR_ROOT=~/exercism/ruby`.
 
 Editor commands are split with shell-like quoting, so this works:
 
